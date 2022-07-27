@@ -3,6 +3,7 @@ package com.swan.springbootdev.demo.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +21,18 @@ public class AsyncDemoController {
 	public String doAsync() {
 		String str = "Do Async!";
 		LOGGER.info(str);
-		messageSendService.sendMessageASync();
+		messageSendService.sendMessageASync().addCallback(new ListenableFutureCallback<String>() {
+			@Override
+			public void onSuccess(String result) {
+				LOGGER.info("Callback success!");	
+				LOGGER.info("result:"+result);
+			}
+			@Override
+			public void onFailure(Throwable e) {
+				LOGGER.info("Callback failure...");	
+				LOGGER.info("Error message:"+e.getMessage());
+			}
+		});
 		return String.format(str);
 	}	
 
