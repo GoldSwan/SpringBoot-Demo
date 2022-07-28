@@ -3,6 +3,7 @@ package com.swan.springbootdev.demo.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskRejectedException;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ public class AsyncDemoController {
 	public String doAsync() {
 		String str = "Do Async!";
 		LOGGER.info(str);
+		try {
 		messageSendService.sendMessageASync().addCallback(new ListenableFutureCallback<String>() {
 			@Override
 			public void onSuccess(String result) {
@@ -33,6 +35,10 @@ public class AsyncDemoController {
 				LOGGER.info("Error message:"+e.getMessage());
 			}
 		});
+		}catch(TaskRejectedException e) {
+			//최대 Thread, QueueCapacity 초과시 발생하는 TaskRejectedException 처리
+			LOGGER.info("요청 수용량 초과로 인해 비동기 요청이 실패했습니다.");
+		}
 		return String.format(str);
 	}	
 
