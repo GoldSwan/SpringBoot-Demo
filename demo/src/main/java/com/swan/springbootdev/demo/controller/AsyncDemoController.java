@@ -1,5 +1,8 @@
 package com.swan.springbootdev.demo.controller;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +45,24 @@ public class AsyncDemoController {
 		return String.format(str);
 	}	
 
+	@GetMapping("/async/completablefuture")
+	public String doAsyncCompletableFuture() throws InterruptedException, ExecutionException {
+		String str = "Do Async!";
+		LOGGER.info(str);
+		CompletableFuture<String> sendMessage = CompletableFuture.completedFuture("");
+		
+		try {
+			//CompletableFuture를 이용한 콜백 중첩 예제
+			sendMessage = messageSendService.sendMessageASyncByCompletableFuture1()
+					                        .thenCompose(messageSendService::sendMessageASyncByCompletableFuture2)
+											.thenCompose(messageSendService::sendMessageASyncByCompletableFuture3);
+		}catch(TaskRejectedException e) {
+			//최대 Thread, QueueCapacity 초과시 발생하는 TaskRejectedException 처리
+			LOGGER.info("요청 수용량 초과로 인해 비동기 요청이 실패했습니다.");
+		}
+		return sendMessage.get();
+	}
+	
 	@GetMapping("/sync")
 	public String doSync() {
 		String str = "Do Sync!";
